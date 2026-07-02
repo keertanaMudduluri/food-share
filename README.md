@@ -144,8 +144,7 @@ graph TD
 
 ---
 
-## Demo Script
-A professional timed demonstration script is available in [DEMO_SCRIPT.txt](DEMO_SCRIPT.txt).
+
 
 ---
 
