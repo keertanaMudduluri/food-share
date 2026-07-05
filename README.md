@@ -190,12 +190,6 @@ See the [ADK Cloud Run deployment guide](https://google.github.io/adk-docs/deplo
    - `.adk/`
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> aafe52ad2c9062bf01c362166120ec695d8c39fb
-
----
 
 ## Architecture Diagram Details
 For a deep dive into the workflow architecture:
