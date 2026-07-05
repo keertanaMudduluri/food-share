@@ -1,9 +1,36 @@
 # Food Share Agent 🌍
+**An AI-powered multi-agent system that connects food donors to local shelters — safely, instantly, and intelligently.**
 
-A secure, intelligent multi-agent system built with the Google Agent Development Kit (ADK) 2.0. Matches restaurants and grocery stores with excess food to nearby shelters based on real-time local needs, ensuring food safety and security.
-
-## Assets
 ![Cover Page Banner](assets/cover_page_banner.png)
+
+---
+
+## Problem
+
+Every year, grocery stores and restaurants discard tons of edible food due to overstocking or near-term expiry. At the same time, local shelters struggle to source food for vulnerable populations. Manual matching is slow, error-prone, and fails to enforce food safety regulations consistently.
+
+## Solution
+
+Food Share automates the full donation pipeline using a **multi-agent system** built on Google ADK 2.0:
+- A **Security Checkpoint** vets every donor message for prompt injection, banned items, and PII before any LLM sees it.
+- An **Inventory Agent** parses unstructured donor messages into structured food inventories.
+- A **Matcher Agent** queries live shelter data via a **FastMCP server** and logs confirmed matches.
+- A **Human-in-the-Loop** node pauses the workflow for coordinator approval on near-expiry items.
+
+Agents are the right tool here because donor messages are unstructured natural language — no simple rule-based script can reliably extract food type, quantity, and expiry from free-form text, nor can it reason about which shelter's urgent needs best match a given donation.
+
+---
+
+## Key ADK Concepts Demonstrated
+
+| Concept | Implementation |
+|---|---|
+| Multi-agent system (`LlmAgent` + `AgentTool`) | `app/agent.py` — `inventory_agent`, `matcher_agent`, `orchestrator_agent` |
+| ADK Workflow (graph with conditional routing) | `app/agent.py` — `Workflow` + `Edge` definitions |
+| MCP Server (`FastMCP`) | `app/mcp_server.py` — 3 domain tools |
+| Human-in-the-Loop (`RequestInput`) | `app/agent.py` — `human_approval` node |
+| Security guardrails (pre-LLM checkpoint) | `app/agent.py` — `security_checkpoint` node |
+| Pydantic output schemas | `app/agent.py` — `DonationInventory`, `MatchPlan` |
 
 ## Prerequisites
 - **Python**: version 3.11 to 3.13
@@ -118,6 +145,26 @@ graph TD
 
 ---
 
+## Deployment
+
+This project can be deployed to Google Cloud Run using the ADK CLI:
+
+```bash
+adk deploy cloud_run \
+  --project YOUR_GCP_PROJECT_ID \
+  --region us-central1 \
+  --app_name food-share
+```
+
+Before deploying, store your API key as a Cloud Run secret:
+```bash
+gcloud secrets create GOOGLE_API_KEY --data-file=- <<< "your_api_key_here"
+```
+
+See the [ADK Cloud Run deployment guide](https://google.github.io/adk-docs/deploy/cloud-run/) for full instructions.
+
+---
+
 ## Push to GitHub
 
 1. Create a new repo at https://github.com/new
@@ -142,10 +189,7 @@ graph TD
    - `__pycache__/`
    - `.adk/`
 
----
 
-## Demo Script
-A professional timed demonstration script is available in [DEMO_SCRIPT.txt](DEMO_SCRIPT.txt).
 
 ---
 

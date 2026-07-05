@@ -23,7 +23,9 @@ from mcp import StdioServerParameters
 from .config import config
 
 # -----------------------------------------------------------------------------
-# Schemas
+# Output Schemas
+# Pydantic models enforce structured JSON output from each LlmAgent, preventing
+# free-form text responses and ensuring downstream nodes can reliably parse results.
 # -----------------------------------------------------------------------------
 
 class FoodItem(BaseModel):
@@ -48,6 +50,8 @@ class MatchPlan(BaseModel):
 
 # -----------------------------------------------------------------------------
 # MCP Toolset Configuration
+# Launches the FastMCP server as a subprocess over stdio so agents can call
+# get_active_shelters, get_current_inventory, and log_matched_donation as tools.
 # -----------------------------------------------------------------------------
 
 mcp_tools = McpToolset(
@@ -61,6 +65,8 @@ mcp_tools = McpToolset(
 
 # -----------------------------------------------------------------------------
 # Sub-Agents
+# Each LlmAgent has a single focused responsibility and a strict output_schema.
+# AgentTool wraps sub-agents so the orchestrator can call them like any other tool.
 # -----------------------------------------------------------------------------
 
 inventory_agent = LlmAgent(
@@ -119,12 +125,14 @@ orchestrator_agent = LlmAgent(
 
 # -----------------------------------------------------------------------------
 # Workflow Nodes
+# All nodes are pure Python functions decorated with @node. The Workflow engine
+# routes between them based on the `route` field on the returned Event.
 # -----------------------------------------------------------------------------
 
-# List of illegal/unsafe donation items
+# Banned items list — alcohol and controlled substances violate food-safety regulations
 BANNED_DONATION_ITEMS = ["alcohol", "wine", "beer", "whiskey", "vodka", "drugs", "medication", "prescription", "marijuana"]
 
-# Injection keywords
+# Common prompt injection phrases — caught before reaching any LLM
 INJECTION_KEYWORDS = ["ignore previous", "system prompt", "override instructions", "bypass security", "you must ignore"]
 
 
@@ -293,6 +301,8 @@ def final_output(ctx: Context, node_input):
 
 # -----------------------------------------------------------------------------
 # Workflow Graph
+# Defines the ADK Workflow as a directed graph of nodes and conditional edges.
+# The route field on each Event determines which edge is followed at runtime.
 # -----------------------------------------------------------------------------
 
 from google.adk.workflow import Edge
